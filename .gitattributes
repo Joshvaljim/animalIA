@@ -1,1 +1,2 @@
+*.safetensors filter=lfs diff=lfs merge=lfs -text
 modelo_local/model.safetensors filter=lfs diff=lfs merge=lfs -text
