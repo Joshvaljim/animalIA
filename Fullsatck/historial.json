@@ -1,0 +1,16 @@
+[
+    {
+        "fecha": "2026-11-09 21:05:14",
+        "archivo": "malinois.jpg",
+        "raza": "Malinois",
+        "confianza": "99.66%",
+        "color": "Blanco"
+    },
+    {
+        "fecha": "2026-11-09 13:15:22",
+        "archivo": "perrocallejero.jpg",
+        "raza": "Dingo, Warrigal, Warragal, Canis Dingo",
+        "confianza": "76.37%",
+        "color": "Blanco"
+    }
+]
