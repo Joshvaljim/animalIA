@@ -17,7 +17,6 @@ class AnimaliaApp(ctk.CTk):
   def __init__(self):
     super().__init__()
 
-    # 1. Comprobar si el programa ya está activado en esta PC
     if not verificar_licencia_simple():
       self._mostrar_ventana_activacion()
     else:
@@ -56,7 +55,6 @@ class AnimaliaApp(ctk.CTk):
   def validar_y_activar(self):
     codigo = self.entry_codigo.get()
     if activar_con_codigo(codigo):
-      # Limpiar la ventana de activación y cargar la app normal
       for widget in self.winfo_children():
         widget.destroy()
       self._iniciar_programa_principal()
@@ -75,7 +73,6 @@ class AnimaliaApp(ctk.CTk):
     self._crear_componentes()
 
   def _crear_componentes(self):
-    # Pestañas principales de la interfaz
     self.tabview = ctk.CTkTabview(self, width=950, height=610)
     self.tabview.pack(padx=15, pady=15, fill="both", expand=True)
 
@@ -97,22 +94,39 @@ class AnimaliaApp(ctk.CTk):
     self.lbl_imagen = ctk.CTkLabel(
         self.frame_izq,
         text="Sin archivo cargado",
-        width=400,
-        height=340,
+        width=380,
+        height=260,
         fg_color=("gray85", "gray20"),
         corner_radius=8,
         font=ctk.CTkFont(size=13),
     )
-    self.lbl_imagen.pack(padx=15, pady=15, expand=True)
+    self.lbl_imagen.pack(padx=15, pady=(15, 10), expand=True)
 
     self.btn_select = ctk.CTkButton(
         self.frame_izq,
         text="Seleccionar Imagen",
         command=self.cargar_imagen,
         font=ctk.CTkFont(size=13, weight="bold"),
-        height=35,
+        height=32,
     )
     self.btn_select.pack(pady=(0, 8), fill="x", padx=15)
+
+    # Campo para el nombre de la mascota
+    self.lbl_nombre_mascota = ctk.CTkLabel(
+        self.frame_izq,
+        text="Nombre de la Mascota:",
+        font=ctk.CTkFont(size=12, weight="bold"),
+        anchor="w",
+    )
+    self.lbl_nombre_mascota.pack(fill="x", padx=15, pady=(0, 2))
+
+    self.entry_nombre = ctk.CTkEntry(
+        self.frame_izq,
+        placeholder_text="Ej. Max, Luna, Firulais...",
+        height=32,
+        font=ctk.CTkFont(size=13),
+    )
+    self.entry_nombre.pack(pady=(0, 10), fill="x", padx=15)
 
     self.btn_analyze = ctk.CTkButton(
         self.frame_izq,
@@ -143,9 +157,8 @@ class AnimaliaApp(ctk.CTk):
 
     self.txt_resultado.insert(
         "0.0",
-        "Esperando imagen...\n\nSelecciona una imagen y haz clic en 'Iniciar"
-        " Análisis' para ver los resultados detallados y el color"
-        " predominante.",
+        "Esperando imagen...\n\nSelecciona una imagen, ingresa el nombre de tu"
+        " mascota y haz clic en 'Iniciar Análisis'.",
     )
     self.txt_resultado.configure(state="disabled")
 
@@ -160,10 +173,11 @@ class AnimaliaApp(ctk.CTk):
     )
     lbl_titulo.grid(row=0, column=0, pady=(10, 5), sticky="w", padx=15)
 
-    self.txt_historial = ctk.CTkTextbox(
-        self.tab_historial, font=ctk.CTkFont(size=13), corner_radius=8
+    # Frame deslizable moderno para mostrar tarjetas con miniaturas de imágenes
+    self.scroll_historial = ctk.CTkScrollableFrame(
+        self.tab_historial, corner_radius=8
     )
-    self.txt_historial.grid(
+    self.scroll_historial.grid(
         row=1, column=0, padx=15, pady=(0, 15), sticky="nsew"
     )
 
@@ -178,31 +192,64 @@ class AnimaliaApp(ctk.CTk):
     self.cargar_datos_historial()
 
   def cargar_datos_historial(self):
-    self.txt_historial.configure(state="normal")
-    self.txt_historial.delete("0.0", "end")
+    # Limpiar elementos previos en el scroll
+    for widget in self.scroll_historial.winfo_children():
+      widget.destroy()
 
     historial = self.processor.cargar_historial()
     if not historial:
-      self.txt_historial.insert(
-          "0.0", "No hay registros en el historial todavía."
+      lbl_vacio = ctk.CTkLabel(
+          self.scroll_historial,
+          text="No hay registros en el historial todavía.",
+          font=ctk.CTkFont(size=13),
       )
-    else:
-      texto = ""
-      for i, item in enumerate(historial, 1):
-        texto += (
-            f"[{i}] Fecha: {item['fecha']} | Archivo: {item['archivo']}\n"
-        )
-        texto += (
-            f"   🐾 Raza: {item['raza']} | 📊 Confianza: {item['confianza']} |"
-            f" 🎨 Color: {item['color']}\n"
-        )
-        texto += (
-            "------------------------------------------------------------------"
-            "----------\n"
-        )
-      self.txt_historial.insert("0.0", texto)
+      lbl_vacio.pack(pady=20)
+      return
 
-    self.txt_historial.configure(state="disabled")
+    for item in historial:
+      # Tarjeta individual por cada registro
+      card = ctk.CTkFrame(self.scroll_historial, corner_radius=6)
+      card.pack(fill="x", pady=5, padx=5)
+
+      # Cargar imagen en miniatura (Thumbnail)
+      img_path = item.get("ruta_imagen", "")
+      if img_path and os.path.exists(img_path):
+        try:
+          img_pil = Image.open(img_path)
+          img_pil.thumbnail((65, 65))
+          img_tk = ctk.CTkImage(
+              light_image=img_pil, dark_image=img_pil, size=img_pil.size
+          )
+          lbl_thumb = ctk.CTkLabel(card, text="", image=img_tk)
+          lbl_thumb.image = img_tk  # Evitar que el recolector de basura la borre
+          lbl_thumb.pack(side="left", padx=10, pady=8)
+        except Exception:
+          lbl_thumb = ctk.CTkLabel(
+              card, text="[Error img]", width=65, height=65
+          )
+          lbl_thumb.pack(side="left", padx=10, pady=8)
+      else:
+        lbl_thumb = ctk.CTkLabel(card, text="[Sin img]", width=65, height=65)
+        lbl_thumb.pack(side="left", padx=10, pady=8)
+
+      # Información del texto del registro
+      info_frame = ctk.CTkFrame(card, fg_color="transparent")
+      info_frame.pack(side="left", fill="both", expand=True, padx=5, pady=5)
+
+      nombre_mascota = item.get("nombre_mascota", "Sin Nombre")
+      texto_detalle = (
+          f"🐾 Mascota: {nombre_mascota}  |  Raza: {item['raza']}\n"
+          f"📅 Fecha: {item['fecha']}  |  📊 Confianza: {item['confianza']}  |"
+          f"  🎨 Color: {item['color']}"
+      )
+      lbl_detalle = ctk.CTkLabel(
+          info_frame,
+          text=texto_detalle,
+          font=ctk.CTkFont(size=12),
+          justify="left",
+          anchor="w",
+      )
+      lbl_detalle.pack(fill="both", expand=True, anchor="w")
 
   def cargar_imagen(self):
     tipos_archivo = [("Archivos de imagen", "*.jpg *.jpeg *.png *.webp")]
@@ -215,7 +262,7 @@ class AnimaliaApp(ctk.CTk):
         self.saved_image_path, _ = self.processor.guardar_imagen(archivo)
 
         img_pil = Image.open(self.saved_image_path)
-        img_pil.thumbnail((400, 340))
+        img_pil.thumbnail((380, 260))
         self.img_tk = ctk.CTkImage(
             light_image=img_pil, dark_image=img_pil, size=img_pil.size
         )
@@ -233,8 +280,14 @@ class AnimaliaApp(ctk.CTk):
     if not self.saved_image_path:
       return
 
+    # Obtener el nombre ingresado por el usuario
+    nombre_mascota = self.entry_nombre.get().strip()
+    if not nombre_mascota:
+      nombre_mascota = "Sin Nombre"
+
+    # Enviar al backend incluyendo el nombre
     raza, confianza, color = self.processor.analizar_imagen(
-        self.saved_image_path
+        self.saved_image_path, nombre_mascota
     )
 
     # Actualizar panel de resultados
@@ -242,7 +295,8 @@ class AnimaliaApp(ctk.CTk):
     self.txt_resultado.delete("0.0", "end")
 
     info_texto = (
-        f"🐾 Raza Detectada:\n{raza}\n\n"
+        f"🐾 Nombre de la Mascota:\n{nombre_mascota}\n\n"
+        f"🐶 Raza Detectada:\n{raza}\n\n"
         f"📊 Confianza del Modelo:\n{confianza:.2f}%\n\n"
         f"🎨 Color Predominante:\n{color}\n\n"
         f"📍 Archivo analizado:\n{os.path.basename(self.saved_image_path)}"
@@ -251,5 +305,5 @@ class AnimaliaApp(ctk.CTk):
     self.txt_resultado.insert("0.0", info_texto)
     self.txt_resultado.configure(state="disabled")
 
-    # Refrescar automáticamente la pestaña de historial tras un nuevo análisis
+    # Refrescar automáticamente la pestaña de historial
     self.cargar_datos_historial()

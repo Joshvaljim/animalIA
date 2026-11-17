@@ -1,0 +1,70 @@
+[
+    {
+        "fecha": "2026-11-16 13:46:27",
+        "archivo": "malinois.jpg",
+        "ruta_imagen": "C:\\Users\\joshu\\OneDrive\\Escritorio\\Proyecto RPSE\\Fullstack\\uploads\\malinois.jpg",
+        "nombre_mascota": "panchillo",
+        "raza": "Malinois",
+        "confianza": "99.66%",
+        "color": "Blanco"
+    },
+    {
+        "fecha": "2026-11-16 13:46:08",
+        "archivo": "perrocallejero.jpg",
+        "ruta_imagen": "C:\\Users\\joshu\\OneDrive\\Escritorio\\Proyecto RPSE\\Fullstack\\uploads\\perrocallejero.jpg",
+        "nombre_mascota": "firulais",
+        "raza": "Dingo, Warrigal, Warragal, Canis Dingo",
+        "confianza": "76.37%",
+        "color": "Gris"
+    },
+    {
+        "fecha": "2026-11-16 13:42:44",
+        "archivo": "chihuahua.jpg",
+        "ruta_imagen": "C:\\Users\\joshu\\OneDrive\\Escritorio\\Proyecto RPSE\\Fullstack\\uploads\\chihuahua.jpg",
+        "nombre_mascota": "Nyarlatoteph",
+        "raza": "Chihuahua",
+        "confianza": "92.07%",
+        "color": "Blanco"
+    },
+    {
+        "fecha": "2026-11-16 13:41:13",
+        "archivo": "malinois.jpg",
+        "ruta_imagen": "C:\\Users\\joshu\\OneDrive\\Escritorio\\Proyecto RPSE\\Fullstack\\uploads\\malinois.jpg",
+        "nombre_mascota": "jorge",
+        "raza": "Malinois",
+        "confianza": "99.66%",
+        "color": "Blanco"
+    },
+    {
+        "fecha": "2026-11-16 13:38:09",
+        "archivo": "malinois.jpg",
+        "ruta_imagen": "C:\\Users\\joshu\\OneDrive\\Escritorio\\Proyecto RPSE\\Fullstack\\uploads\\malinois.jpg",
+        "nombre_mascota": "pancho",
+        "raza": "Malinois",
+        "confianza": "99.66%",
+        "color": "Blanco"
+    },
+    {
+        "fecha": "2026-11-16 13:35:20",
+        "archivo": "gatoragdoll.jpg",
+        "ruta_imagen": "C:\\Users\\joshu\\OneDrive\\Escritorio\\Proyecto RPSE\\Fullstack\\uploads\\gatoragdoll.jpg",
+        "nombre_mascota": "Bola de Nieve",
+        "raza": "Egyptian Cat",
+        "confianza": "32.64%",
+        "color": "Blanco"
+    },
+    {
+        "fecha": "2026-11-09 21:05:14",
+        "archivo": "malinois.jpg",
+        "raza": "Malinois",
+        "confianza": "99.66%",
+        "color": "Blanco"
+    },
+    {
+        "fecha": "2026-11-09 13:15:22",
+        "archivo": "perrocallejero.jpg",
+        "raza": "Dingo, Warrigal, Warragal, Canis Dingo",
+        "confianza": "76.37%",
+        "color": "Blanco"
+    }
+]

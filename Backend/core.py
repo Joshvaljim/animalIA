@@ -1,6 +1,8 @@
 from datetime import datetime
 import json
 import os
+import numpy as np
+from sklearn.cluster import KMeans
 import sys
 from PIL import Image
 import torch
@@ -20,8 +22,7 @@ def verificar_licencia_simple(archivo_lock="activado.lock"):
 
 
 def activar_con_codigo(codigo_ingresado, archivo_lock="activado.lock"):
-  # 🔑 CÓDIGO MAESTRO: Puedes cambiarlo por el que desees entregar a tus clientes
-  CODIGO_MAESTRO = "ANIMALIA1"
+  CODIGO_MAESTRO = "ANIMALIAXDD"
   ruta = obtener_ruta_recurso(archivo_lock)
 
   if codigo_ingresado.strip() == CODIGO_MAESTRO:
@@ -32,7 +33,7 @@ def activar_con_codigo(codigo_ingresado, archivo_lock="activado.lock"):
     except Exception:
       return False
   return False
-
+all()
 
 class reconocimientoImagen:
 
@@ -72,20 +73,37 @@ class reconocimientoImagen:
     img.save(destino)
     return destino, nombre_archivo
 
+
+
   def obtener_color_predominante(self, ruta_imagen):
     try:
       img = Image.open(ruta_imagen).convert("RGB")
-      img = img.resize((50, 50))  # Reducir imagen para procesamiento instantáneo
-      colores = img.getcolors(maxcolors=2500)
-      if not colores:
-        return "Desconocido"
 
-      # Ordenar por el color que más se repite
-      colores.sort(key=lambda x: x[0], reverse=True)
-      _, rgb = colores[0]
-      r, g, b = rgb
+      # 1. Recorte central (Center Crop) ampliado al 70% para mitigar el fondo
+      width, height = img.size
+      left = width * 0.15
+      top = height * 0.15
+      right = width * 0.85
+      bottom = height * 0.85
+      img = img.crop((left, top, right, bottom))
 
-      # Clasificación básica y amigable del color RGB
+
+      img = img.resize((100, 100))
+
+
+      pixels = np.array(img).reshape((-1, 3))
+
+
+      kmeans = KMeans(n_clusters=3, n_init=10, random_state=42)
+      kmeans.fit(pixels)
+
+
+      counts = np.bincount(kmeans.labels_)
+      dominant_cluster = np.argmax(counts)
+
+
+      r, g, b = map(int, kmeans.cluster_centers_[dominant_cluster])
+
       if r > 200 and g > 200 and b > 200:
         return "Blanco"
       elif r < 50 and g < 50 and b < 50:
@@ -107,11 +125,23 @@ class reconocimientoImagen:
     except Exception:
       return "No analizado"
 
-  def guardar_en_historial(self, nombre_archivo, raza, confianza, color):
+  def guardar_en_historial(
+      self,
+      nombre_archivo,
+      raza,
+      confianza,
+      color,
+      nombre_mascota="Sin Nombre",
+      ruta_imagen="",
+  ):
     historial = self.cargar_historial()
     nuevo_registro = {
         "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "archivo": nombre_archivo,
+        "ruta_imagen": ruta_imagen,
+        "nombre_mascota": nombre_mascota
+        if nombre_mascota
+        else "Sin Nombre",
         "raza": raza,
         "confianza": f"{confianza:.2f}%",
         "color": color,
@@ -132,14 +162,12 @@ class reconocimientoImagen:
     except Exception:
       return []
 
-  def analizar_imagen(self, rutaImagen):
+  def analizar_imagen(self, rutaImagen, nombre_mascota="Sin Nombre"):
     nombre_archivo = os.path.basename(rutaImagen)
     imagen = Image.open(rutaImagen).convert("RGB")
 
-    # 1. Obtener color predominante
     color_predominante = self.obtener_color_predominante(rutaImagen)
 
-    # 2. Inferencia con IA
     inputs = self.processor(images=imagen, return_tensors="pt")
     with torch.no_grad():
       outputs = self.model(**inputs)
@@ -152,9 +180,14 @@ class reconocimientoImagen:
     raza = raza_raw.replace("_", " ").title()
     confianza_porcentaje = confianza.item() * 100
 
-    # 3. Guardar automáticamente en el historial local
+    # Guardar en el historial incluyendo el nombre y la ruta de la imagen
     self.guardar_en_historial(
-        nombre_archivo, raza, confianza_porcentaje, color_predominante
+        nombre_archivo,
+        raza,
+        confianza_porcentaje,
+        color_predominante,
+        nombre_mascota,
+        rutaImagen,
     )
 
     return raza, confianza_porcentaje, color_predominante
